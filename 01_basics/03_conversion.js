@@ -22,3 +22,14 @@ console.log(boollogin);
 let somenumebr = 33
 let strnumber = String(somenumebr)
 console.log(typeof strnumber);
+
+//*****************operations************** */
+
+console.log("1"+ 2);
+console.log("1"+2+2);
+console.log(2+2+"1");
+
+
+
+
+
