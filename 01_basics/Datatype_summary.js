@@ -56,3 +56,29 @@ const myFunction = function () {
 console.log(typeof myFunction); // function (but technically it's an object)
 
 myFunction(); // calling the function
+
+
+///*********************(Stack memory):*************** */
+// Primitive types -> stored in stack
+let myName = "Jayesh";
+let anotherName = myName; // copy of value is created
+
+anotherName = "Ritesh"; // change only affects anotherName
+
+console.log(myName);      // "Jayesh"  (original remains unchanged)
+console.log(anotherName); // "Ritesh"  (different copy)
+
+
+//******************************Heap (Reference values)*************** */
+// Reference types -> stored in heap
+let userOne = {
+  email: "jayesh@example.com",
+  upi: "jayesh@upi"
+};
+
+let userTwo = userOne; // both point to SAME object in heap
+
+userTwo.email = "ritesh@example.com"; // modifying through userTwo
+
+console.log(userOne.email); // "ritesh@example.com" (changed!)
+console.log(userTwo.email); // "ritesh@example.com"
