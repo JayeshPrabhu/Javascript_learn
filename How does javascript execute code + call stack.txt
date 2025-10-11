@@ -1,0 +1,251 @@
+Sure — here’s your **JavaScript Execution Context and Call Stack** explanation rewritten cleanly **without any `**` bold formatting**, keeping it neatly structured and easy to read:
+
+---
+
+# 🧠 JavaScript Execution Context and Call Stack
+
+(Deep Explanation in Simple Words)
+
+---
+
+## 1. Introduction
+
+When you run any JavaScript code, whether in a browser or in Node.js, the JavaScript engine (like Chrome’s V8) creates something called an Execution Context.
+
+An execution context is like a container or environment where your code runs.
+It decides:
+
+* Where the code runs
+* How variables and functions are stored and accessed
+* What value `this` refers to
+
+There are mainly two types of execution contexts:
+
+1. Global Execution Context (GEC) – created automatically when the script starts.
+2. Function Execution Context (FEC) – created each time a function is called.
+
+There’s also an Eval Execution Context, but it’s rarely discussed or needed in modern JavaScript.
+
+---
+
+## 2. The Global Execution Context (GEC)
+
+When you open a JavaScript file and run it, the engine first creates the Global Execution Context.
+
+It does two main things:
+
+1. Creates a global object
+
+   * In browsers → it’s the `window` object.
+   * In Node.js → it’s the `global` object.
+
+2. Sets `this` equal to that global object.
+
+Example:
+
+```javascript
+console.log(this); // In browser → window; In Node.js → {}
+```
+
+---
+
+## 3. JavaScript Is Single-Threaded
+
+JavaScript runs on one thread, meaning only one piece of code executes at a time.
+It does not run multiple lines of code truly in parallel.
+
+Instead, JS handles tasks one by one, maintaining order using a structure called the Call Stack.
+
+---
+
+## 4. The Two Phases of Execution
+
+Every execution context (Global or Function) runs in two main phases:
+
+### Phase 1 – Memory Creation (Hoisting Phase)
+
+* The engine scans the code and allocates memory for variables and functions.
+* Variables are initialized with `undefined`.
+* Function declarations are stored completely in memory (their full definitions).
+* No actual code is executed yet.
+
+### Phase 2 – Execution Phase
+
+* The code is executed line by line.
+* Variables get assigned their real values.
+* Functions are invoked, which in turn create new execution contexts.
+
+---
+
+## 5. Example: Step-by-Step Execution
+
+```javascript
+let valueOne = 10;
+let valueTwo = 5;
+
+function addNumbers(n1, n2) {
+    let total = n1 + n2;
+    return total;
+}
+
+let result1 = addNumbers(valueOne, valueTwo);
+let result2 = addNumbers(10, 2);
+```
+
+---
+
+### Step 1: Global Execution Context (GEC) Created
+
+The JavaScript engine creates the GEC and starts the Memory Phase.
+
+---
+
+### Memory Creation Phase
+
+Before running, JS scans the code:
+
+| Identifier | Memory Allocated As      |
+| ---------- | ------------------------ |
+| valueOne   | undefined                |
+| valueTwo   | undefined                |
+| addNumbers | full function definition |
+| result1    | undefined                |
+| result2    | undefined                |
+
+Note: Functions are fully stored, not set to `undefined`.
+
+---
+
+### Execution Phase
+
+Now JS runs line by line:
+
+1. `valueOne = 10`
+2. `valueTwo = 5`
+3. `addNumbers` → already stored
+4. `result1 = addNumbers(valueOne, valueTwo)` → calls a new Function Execution Context (FEC)
+
+---
+
+## 6. Function Execution Context (FEC)
+
+Each time a function is invoked, a new FEC is created with its own memory and scope.
+
+Inside `addNumbers(valueOne, valueTwo)`:
+
+### Function Memory Phase
+
+| Identifier | Value     |
+| ---------- | --------- |
+| n1         | undefined |
+| n2         | undefined |
+| total      | undefined |
+
+### Function Execution Phase
+
+| Step                                                    | Action |
+| ------------------------------------------------------- | ------ |
+| Assign `n1 = 10`, `n2 = 5`                              |        |
+| Compute `total = n1 + n2` → `15`                        |        |
+| Return `15` to the global context                       |        |
+| Function Execution Context gets deleted after returning |        |
+
+Now, in the Global Execution Context,
+`result1` receives the returned value `15`.
+
+When the second call `addNumbers(10, 2)` happens,
+a new FEC is created again, following the same steps, and then deleted after execution.
+
+---
+
+## 7. The Call Stack
+
+The Call Stack is a structure that keeps track of which function is currently running.
+
+Think of it like a stack of plates (LIFO – Last In, First Out):
+
+1. When your program starts → Global Execution Context (GEC) is pushed to the stack.
+2. When a function is called → a new FEC is pushed on top.
+3. When the function finishes → its context is popped off.
+4. Once all functions finish → only the GEC remains until the program ends.
+
+---
+
+### Example:
+
+```javascript
+function one(){
+    console.log("one");
+    two();
+}
+function two(){
+    console.log("two");
+    three();
+}
+function three(){
+    console.log("three");
+}
+one();
+```
+
+**Call Stack flow:**
+
+| Action                          | Stack                     |
+| ------------------------------- | ------------------------- |
+| Start program                   | [Global]                  |
+| Call `one()`                    | [Global, one]             |
+| Inside `one()` → call `two()`   | [Global, one, two]        |
+| Inside `two()` → call `three()` | [Global, one, two, three] |
+| `three()` finishes              | Pop → [Global, one, two]  |
+| `two()` finishes                | Pop → [Global, one]       |
+| `one()` finishes                | Pop → [Global]            |
+
+This demonstrates LIFO (Last In, First Out).
+
+---
+
+## 8. Live Debugging in Chrome DevTools
+
+You can visualize this process easily:
+
+1. Open DevTools → Sources tab.
+2. Paste code in Snippets.
+3. Add breakpoints at function calls.
+4. Use the Call Stack panel (on the right) to watch:
+
+   * New contexts being created (pushed)
+   * Execution finishing (popped)
+   * Variable changes in scope
+
+Seeing this live builds strong intuition about execution order and memory handling.
+
+---
+
+## 9. Why This Matters for Interviews
+
+Many JS interview questions indirectly test your understanding of execution context and call stack, such as:
+
+* Hoisting (why `var` is `undefined` and not an error)
+* Value of `this`
+* Scope and closures
+* Asynchronous behavior (event loop works on top of this foundation)
+
+If you deeply understand GEC, FEC, and Call Stack, you can easily reason through tricky JS questions.
+
+---
+
+## 10. Key Takeaways
+
+| Concept           | Meaning                                                  |
+| ----------------- | -------------------------------------------------------- |
+| Execution Context | Environment in which code runs                           |
+| Global Context    | Created first, linked to global object                   |
+| Function Context  | Created each time a function runs                        |
+| Two Phases        | Memory Creation (hoisting) + Execution                   |
+| Call Stack        | LIFO structure controlling execution order               |
+| `this` keyword    | Refers to global object in GEC; depends on caller in FEC |
+| IIFE / Scope      | Encapsulates and avoids polluting global space           |
+
+---
+
+Would you like me to continue and write a **section on how the Event Loop connects to the Call Stack and Execution Context** next (to complete the full picture)?
