@@ -1,0 +1,126 @@
+<!-- 
+===============================
+   🧠 INTRO TO THE DOM (EASY)
+===============================
+
+DOM = Document Object Model
+- It’s like a tree structure of your web page.
+- The browser takes your HTML code and turns it into a "document" object.
+- Each tag (like <html>, <head>, <body>, <h1>, <p>) becomes a "node" (object).
+- With JavaScript, we can access and change these nodes — that’s how web pages become dynamic!
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Basics</title>
+</head>
+
+<body>
+  <!-- Our simple page -->
+  <div id="container">
+    <h1 id="mainHeading" class="heading">Welcome to DOM</h1>
+    <p class="info">This is a simple paragraph to understand DOM.</p>
+  </div>
+
+  <script>
+    /*
+    =====================================
+    🌳 WHAT IS THE DOM STRUCTURE LIKE?
+    =====================================
+    HTML page is seen by JavaScript as:
+
+      document
+        └── html
+            ├── head
+            │     ├── meta
+            │     └── title
+            └── body
+                  └── div (id="container")
+                        ├── h1 (id="mainHeading")
+                        └── p (class="info")
+
+    Each part (html, head, body, h1, p) is a node we can work with!
+    */
+
+    /*
+    ===============================
+    🧩 HOW TO INSPECT THE DOM
+    ===============================
+    1️⃣ Open browser → Right click → Inspect → Console tab
+    2️⃣ Type:
+         window          → The browser window object
+         document        → Your whole web page
+         console.dir(document) → Shows detailed properties of document
+    */
+
+    /*
+    ===============================
+    🎯 SELECTING ELEMENTS
+    ===============================
+    - We can select elements to read or change them.
+    */
+
+    // Select element by ID
+    const heading = document.getElementById('mainHeading')
+    console.log(heading) // prints the <h1> element
+
+    // Select by class
+    const para = document.querySelector('.info')
+    console.log(para) // prints the <p> element
+
+    /*
+    ===============================
+    ✏️ MANIPULATING CONTENT
+    ===============================
+    - Once we select something, we can change it!
+    */
+
+    // Change the text of h1
+    heading.innerText = "Hello from JavaScript!"
+
+    // Change the HTML inside paragraph
+    para.innerHTML = "<b>This text is now bold!</b>"
+
+    /*
+    ===============================
+    ⚙️ CHANGING STYLE OR ATTRIBUTES
+    ===============================
+    */
+    heading.style.color = "blue"
+    heading.style.textAlign = "center"
+    para.setAttribute("title", "Hover text added!")
+
+    /*
+    ===============================
+    🧭 NAVIGATING THE DOM
+    ===============================
+    - parentElement: go up
+    - children: go down
+    - nextElementSibling / previousElementSibling: move sideways
+    */
+
+    console.log(heading.parentElement)       // <div id="container">
+    console.log(document.body.children)      // all direct children of <body>
+
+    /*
+    ===============================
+    💡 WHY LEARN THIS FIRST?
+    ===============================
+    Frameworks like React or Angular also change the DOM behind the scenes.
+    So if you understand how DOM works, you’ll easily understand frameworks later!
+    */
+
+    /*
+    ===============================
+    🚀 NEXT STEPS
+    ===============================
+    After learning DOM:
+    → Learn EVENTS (like click, hover, keypress)
+    → Then move to small projects using DOM manipulations
+    */
+  </script>
+</body>
+</html>
