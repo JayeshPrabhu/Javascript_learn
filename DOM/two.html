@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM | Chai aur Code Explained</title>
+</head>
+
+<!--
+==============================================
+🌳 DOM PARENT & CHILD RELATION (EASY EXPLANATION)
+==============================================
+
+In this example:
+We will learn how to move between parent and child elements using the DOM.
+-->
+
+<body style="background-color: #212121; color: #fff;">
+
+  <!-- A parent div that contains four child divs -->
+  <div class="parent">
+      <!-- this is a comment (also part of DOM as a node) -->
+      <div class="day">Monday</div>
+      <div class="day">Tuesday</div>
+      <div class="day">Wednesday</div>
+      <div class="day">Thursday</div>
+  </div>
+
+</body>
+
+<script>
+  // ===============================
+  // 🎯 SELECTING THE PARENT ELEMENT
+  // ===============================
+  const parent = document.querySelector('.parent')
+  // Now 'parent' stores the <div class="parent"> ... </div>
+
+  // You can try:
+  // console.log(parent);
+  // It will show the complete div and all its child elements inside.
+
+  // ===============================
+  // 🧒 ACCESSING CHILDREN
+  // ===============================
+  // parent.children gives us all child elements inside parent.
+  // It returns an HTMLCollection (looks like an array but is not exactly one).
+
+  // console.log(parent.children); // shows list of <div class="day"> elements
+
+  // Access individual child
+  // console.log(parent.children[1].innerHTML); // will print "Tuesday"
+
+  // Loop through all children and print their names
+  // for (let i = 0; i < parent.children.length; i++) {
+  //     console.log(parent.children[i].innerHTML);
+  // }
+
+  // ===============================
+  // 🎨 CHANGING STYLE OF A CHILD
+  // ===============================
+  // Here we are styling the 2nd child (Tuesday)
+  parent.children[1].style.color = "orange"
+
+  // You can also use:
+  // parent.firstElementChild → gives first child (Monday)
+  // parent.lastElementChild  → gives last child (Thursday)
+  // console.log(parent.firstElementChild);
+  // console.log(parent.lastElementChild);
+
+  // ===============================
+  // 👶 SELECTING FIRST CHILD
+  // ===============================
+  const dayOne = document.querySelector('.day') // selects first element with class 'day' (Monday)
+
+  // console.log(dayOne); // prints <div class="day">Monday</div>
+  // console.log(dayOne.parentElement); // shows its parent (div.parent)
+  // console.log(dayOne.nextElementSibling); // shows next element (Tuesday)
+
+  // ===============================
+  // 🧩 CHILD NODES
+  // ===============================
+  // childNodes shows *everything* inside parent, not just elements.
+  // It includes:
+  // - Text nodes (spaces, newlines)
+  // - Comment nodes
+  // - Element nodes (<div> tags)
+  console.log("NODES:", parent.childNodes);
+  // You'll see a NodeList with many items like:
+  // #text (for space/newline), comment node, div.day, etc.
+
+  /*
+  ===============================
+  💡 SUMMARY (IN SIMPLE WORDS)
+  ===============================
+  - parent.children → gives only element tags (ignores spaces/comments)
+  - parent.childNodes → gives *everything* including text and comments
+  - parent.firstElementChild → first child element
+  - parent.lastElementChild → last child element
+  - element.parentElement → go from child to parent
+  - element.nextElementSibling → move to next element
+  */
+</script>
+</html>
