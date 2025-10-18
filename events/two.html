@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Timers deep-dive — setTimeout & clearTimeout</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height: 1.5; padding: 20px; color:#111; background:#f6f7fb; }
+    h1 { margin-top: 0; }
+    .card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 6px 18px rgba(20,20,40,0.06); margin-bottom: 16px; }
+    pre { background:#0b1220; color:#e6f1ff; padding:10px; border-radius:6px; overflow:auto; }
+    button { margin:6px 8px 6px 0; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1; background:#eef2ff; cursor:pointer; }
+    #log { white-space: pre-wrap; font-family: monospace; background:#0f1724; color:#d1fae5; padding:12px; border-radius:6px; min-height:80px; }
+    .small { font-size:0.9rem; color:#374151; }
+  </style>
+</head>
+<body>
+
+  <h1>Timers deep-dive — <code>setTimeout</code> & <code>clearTimeout</code></h1>
+
+  <div class="card">
+    <strong>What you'll learn (quick):</strong>
+    <ul class="small">
+      <li>How <code>setTimeout</code> schedules a function to run later and returns an id</li>
+      <li>How <code>clearTimeout</code> cancels a scheduled callback</li>
+      <li>Difference between <code>setTimeout</code> and <code>setInterval</code></li>
+      <li>How timers interact with the event loop (macrotask vs microtask)</li>
+      <li>Common pitfalls & best practices</li>
+    </ul>
+  </div>
+
+  <!-- Visible demo controls -->
+  <div class="card">
+    <h3>Interactive examples</h3>
+
+    <div>
+      <strong>1) Basic setTimeout</strong><br/>
+      <button id="demo-basic">Start timeout (2s)</button>
+      <button id="demo-cancel-basic">Cancel last timeout</button>
+    </div>
+
+    <div style="margin-top:10px;">
+      <strong>2) Repeating with setInterval</strong><br/>
+      <button id="start-interval">Start interval (1s)</button>
+      <button id="stop-interval">Stop interval</button>
+    </div>
+
+    <div style="margin-top:10px;">
+      <strong>3) Event loop demo (microtask vs macrotask)</strong><br/>
+      <button id="event-loop-demo">Run event-loop demo</button>
+    </div>
+
+    <div style="margin-top:10px;">
+      <strong>4) Multiple timeouts and IDs</strong><br/>
+      <button id="multi-timeouts">Create 3 timeouts</button>
+      <button id="clear-all">Clear all timeouts</button>
+    </div>
+  </div>
+
+  <!-- Log area so user can see behavior -->
+  <div class="card">
+    <h3>Console-like log (visible)</h3>
+    <div id="log">Logs will appear here. Click buttons above to run demos.</div>
+  </div>
+
+  <!-- Long explanation (comments are inside script, but we also show readable text) -->
+  <div class="card">
+    <h3>Short readable explanation</h3>
+    <p class="small">
+      <strong><code>setTimeout(fn, delay)</code></strong> schedules <code>fn</code> to run after at least <code>delay</code> milliseconds.
+      It returns a timer id (a number in browsers). Use that id with <code>clearTimeout(id)</code> to cancel the callback before it runs.
+    </p>
+
+    <p class="small">
+      Note: the delay is <em>minimum</em>. If the browser is busy, the callback may run later. <code>setTimeout(..., 0)</code> doesn't run immediately — it schedules a macrotask that runs after current synchronous code and queued microtasks finish.
+    </p>
+
+    <p class="small">
+      <strong>setInterval</strong> repeats the callback every <code>delay</code> ms until you call <code>clearInterval(id)</code>. You can simulate interval with repeated <code>setTimeout</code> for safer control (avoids overlapping runs).
+    </p>
+
+    <p class="small">
+      <strong>Event loop note:</strong> JavaScript has a call stack, microtask queue (promises, <code>queueMicrotask</code>), and macrotask queue (timers, I/O). Microtasks always run before macrotasks after the current stack completes.
+    </p>
+  </div>
+
+  <script>
+    /************************************************************************
+     * Full in-file explanation + interactive code
+     *
+     * This script:
+     * - Implements the UI buttons above
+     * - Contains detailed comments explaining each part
+     *
+     * Read the comments to learn; click buttons to experiment.
+     ************************************************************************/
+
+    // A simple logger that writes to the "log" div and also console.log
+    const logEl = document.getElementById('log');
+    function appendLog(...parts) {
+      const line = parts.map(p => (typeof p === 'object' ? JSON.stringify(p) : String(p))).join(' ');
+      const time = new Date().toLocaleTimeString();
+      logEl.textContent += `\n[${time}] ${line}`;
+      logEl.scrollTop = logEl.scrollHeight;
+      console.log(line);
+    }
+
+    /******************************
+     * Example 1: Basic setTimeout
+     ******************************/
+    // setTimeout returns a timer id:
+    // - In browsers it's usually a positive integer.
+    // - In Node it's a Timeout object.
+    // You keep that id if you want to cancel the timer later with clearTimeout(id).
+    let lastTimeoutId = null;
+
+    document.getElementById('demo-basic').addEventListener('click', function () {
+      appendLog("Scheduling a timeout that will run in 2000 ms...");
+      // schedule the callback
+      lastTimeoutId = setTimeout(function () {
+        appendLog("Basic timeout fired: Hello after 2s!");
+        lastTimeoutId = null; // clear saved id because it ran
+      }, 2000);
+      appendLog("Saved timeout id:", lastTimeoutId);
+    });
+
+    document.getElementById('demo-cancel-basic').addEventListener('click', function () {
+      if (lastTimeoutId !== null) {
+        clearTimeout(lastTimeoutId); // cancel the scheduled callback
+        appendLog("Cancelled timeout with id:", lastTimeoutId);
+        lastTimeoutId = null;
+      } else {
+        appendLog("No active timeout to cancel.");
+      }
+    });
+
+    /******************************
+     * Example 2: setInterval vs setTimeout
+     ******************************/
+    let intervalId = null;
+
+    document.getElementById('start-interval').addEventListener('click', function () {
+      if (intervalId !== null) {
+        appendLog("Interval already running (id=" + intervalId + ").");
+        return;
+      }
+      appendLog("Starting setInterval every 1000 ms.");
+      intervalId = setInterval(() => {
+        appendLog("Interval tick");
+      }, 1000);
+    });
+
+    document.getElementById('stop-interval').addEventListener('click', function () {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        appendLog("Stopped interval id:", intervalId);
+        intervalId = null;
+      } else {
+        appendLog("No interval running.");
+      }
+    });
+
+    /******************************
+     * Example 3: Event loop demo
+     * Show microtask (Promise.then) runs before macrotask (setTimeout)
+     ******************************/
+    document.getElementById('event-loop-demo').addEventListener('click', function () {
+      appendLog("Event-loop demo started");
+
+      // Synchronous log (runs immediately)
+      appendLog("Synchronous log 1");
+
+      // schedule a macrotask (timer) with 0 ms delay
+      setTimeout(() => appendLog("Macrotask: setTimeout callback (0 ms)"), 0);
+
+      // schedule a microtask (promise)
+      Promise.resolve().then(() => appendLog("Microtask: Promise.then callback"));
+
+      // synchronous log 2
+      appendLog("Synchronous log 2");
+
+      // Expected ordering:
+      // 1. Synchronous log 1
+      // 2. Synchronous log 2
+      // 3. Microtask: Promise.then callback
+      // 4. Macrotask: setTimeout callback (0 ms)
+      appendLog("Check ordering: synchronous -> microtask -> macrotask");
+    });
+
+    /******************************
+     * Example 4: Multiple timeouts and clearing all
+     ******************************/
+    let createdTimeouts = []; // store timer ids so we can clear them in bulk
+
+    document.getElementById('multi-timeouts').addEventListener('click', function () {
+      appendLog("Creating 3 timeouts (500ms, 1000ms, 1500ms)");
+      // create three timeouts and store their ids
+      const t1 = setTimeout(() => appendLog("t1 fired (500ms)"), 500);
+      const t2 = setTimeout(() => appendLog("t2 fired (1000ms)"), 1000);
+      const t3 = setTimeout(() => appendLog("t3 fired (1500ms)"), 1500);
+      createdTimeouts.push(t1, t2, t3);
+      appendLog("Created ids:", createdTimeouts.slice(-3));
+    });
+
+    document.getElementById('clear-all').addEventListener('click', function () {
+      if (createdTimeouts.length === 0) {
+        appendLog("No stored timers to clear.");
+        return;
+      }
+      appendLog("Clearing all stored timeouts:", createdTimeouts);
+      for (const id of createdTimeouts) {
+        clearTimeout(id);
+      }
+      createdTimeouts = [];
+    });
+
+    /************************************************************************
+     * Extra comments & best practices (these are important — read them!)
+     *
+     * 1) setTimeout(..., 0) or small delays:
+     *    - They schedule "macrotasks". They do not run immediately.
+     *    - Microtasks (Promise callbacks) run before macrotasks.
+     *
+     * 2) setInterval pitfalls:
+     *    - If the callback is slow and takes longer than the interval,
+     *      successive callbacks can "pile up" or overlap.
+     *    - Safer pattern: use recursive setTimeout (schedule the next call
+     *      from inside the callback) so you can control timing and avoid overlaps.
+     *
+     * 3) Clearing timers:
+     *    - Always store the returned id if you want to cancel.
+     *    - clearTimeout on an already fired/cleared timer does nothing (safe).
+     *
+     * 4) Memory & lifecycle:
+     *    - Timers keep references to closures/objects. If you forget to clear
+     *      long-lived timers, they can cause memory leaks (especially in SPA
+     *      single-page apps when components unmount).
+     *
+     * 5) Passing parameters:
+     *    - setTimeout supports extra args: setTimeout(fn, delay, arg1, arg2)
+     *    - Or use an arrow function that calls fn with args.
+     *
+     * 6) Node vs Browser:
+     *    - Node returns a Timeout object for timers. Browsers return integer ids.
+     *    - API usage is the same for basic needs: clearTimeout(timerId)
+     *
+     * 7) Using performance.now():
+     *    - If you need accurate timing (measuring elapsed time), use performance.now()
+     *      because Date.now() is less precise and can be affected by system clock changes.
+     ************************************************************************/
+
+    // Initialize log with a short intro
+    appendLog("Ready — try the examples above. Open DevTools (console) to see console logs too.");
+  </script>
+</body>
+</html>
