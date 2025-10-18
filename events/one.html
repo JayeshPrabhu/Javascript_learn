@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JavaScript Events Explained</title>
+</head>
+<body style="background-color: #414141; color: aliceblue;">
+  <h2>Amazing Images</h2>
+  <div>
+    <ul id="images">
+      <li><img width="200px" id="photoshop" src="https://images.pexels.com/photos/3561339/pexels-photo-3561339.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt="photoshop"></li>
+      <li><img width="200px" id="japan" src="https://images.pexels.com/photos/3532553/pexels-photo-3532553.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt="japan"></li>
+      <li><img width="200px" id="river" src="https://images.pexels.com/photos/3532551/pexels-photo-3532551.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt="river"></li>
+      <li><img width="200px" id="owl" src="https://images.pexels.com/photos/3532552/pexels-photo-3532552.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt="owl"></li>
+      <li><img width="200px" id="prayer" src="https://images.pexels.com/photos/2522671/pexels-photo-2522671.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load" alt="prayer"></li>
+      <li><a style="color: aliceblue;" href="https://google.com" id="google">Google</a></li>
+    </ul>
+  </div>
+
+  <script>
+    /****************************************************
+     * 🧠 1. BASIC CONCEPT — EVENT FLOW
+     *
+     * When we click on an element, there are 3 phases:
+     *  - CAPTURING: Event travels top → down (document → target)
+     *  - TARGET:    Event reaches the exact clicked element
+     *  - BUBBLING:  Event travels back bottom → up (target → document)
+     ****************************************************/
+
+
+    /****************************************************
+     * 🧩 2. EVENT BUBBLING EXAMPLE
+     * 
+     * If we click on #owl image:
+     *   → The click happens on IMG (target)
+     *   → Then bubbles up to its parent <ul id="images">
+     *   → Then to <body>, <html>, <document>
+     ****************************************************/
+    
+    // Bubbling demo: click on owl, then ul
+    document.getElementById('images').addEventListener('click', function () {
+      console.log("Clicked inside the <ul>");
+    }, false); // false → bubbling phase (default)
+
+    document.getElementById('owl').addEventListener('click', function (e) {
+      console.log("Owl image clicked");
+      // stopPropagation stops the event from bubbling up further
+      e.stopPropagation();
+    }, false);
+
+
+    /****************************************************
+     * 🧩 3. PREVENTING DEFAULT BEHAVIOR
+     * 
+     * Some elements have default browser actions:
+     *   - <a> opens a link
+     *   - <form> submits page
+     * We can stop that using e.preventDefault()
+     ****************************************************/
+    
+    document.getElementById('google').addEventListener('click', function (e) {
+      e.preventDefault(); // stops opening google.com
+      e.stopPropagation(); // also stops bubbling
+      console.log("Google link clicked — default prevented");
+    }, false);
+
+
+    /****************************************************
+     * 🧩 4. EVENT DELEGATION
+     * 
+     * Instead of attaching a click event to each <img>,
+     * we attach ONE listener to their parent (<ul id="images">)
+     * and handle clicks inside it.
+     * 
+     * Benefits:
+     *   ✅ Less memory usage
+     *   ✅ Works for future dynamically added elements
+     ****************************************************/
+    
+    document.querySelector('#images').addEventListener('click', function (e) {
+      console.log("Tag clicked:", e.target.tagName);
+
+      // check if clicked element is an image
+      if (e.target.tagName === 'IMG') {
+        console.log("Removing image with id:", e.target.id);
+
+        // remove the <li> that contains the clicked image
+        let removeIt = e.target.parentNode;
+        removeIt.remove();
+        // OR removeIt.parentNode.removeChild(removeIt);
+      }
+    });
+
+
+    /****************************************************
+     * 🧩 5. USEFUL EVENT PROPERTIES (for reference)
+     * 
+     * e.type            → event type (click, keydown, etc.)
+     * e.timeStamp       → time when event happened
+     * e.target          → element that triggered the event
+     * e.currentTarget   → element the listener is attached to
+     * e.clientX/Y       → mouse position inside the viewport
+     * e.screenX/Y       → mouse position on entire screen
+     * e.altKey, e.ctrlKey, e.shiftKey → modifier keys
+     ****************************************************/
+  </script>
+</body>
+</html>
